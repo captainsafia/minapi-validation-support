@@ -4,9 +4,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json;
+using System.Globalization;
 using System.Text.Json.Serialization;
-using System.Text.Json.Serialization.Metadata;
 using Microsoft.Extensions.Validation;
 using Models;
 
@@ -16,7 +15,22 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 {
   options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
 });
+
 builder.Services.AddValidation();
+
+// With this, validation errors will be returned as a ProblemDetails response.
+builder.Services.AddProblemDetails(options =>
+{
+    options.CustomizeProblemDetails = (context) =>
+    {
+        if (context.ProblemDetails is HttpValidationProblemDetails validationProblem)
+        {
+            context.ProblemDetails.Detail = $"Error(s) occurred: {validationProblem.Errors.Values.Sum(x => x.Length)}";
+        }
+
+        context.ProblemDetails.Extensions.TryAdd("timestamp", DateTime.UtcNow.ToString("o", CultureInfo.InvariantCulture));
+    };
+});
 
 var app = builder.Build();
 

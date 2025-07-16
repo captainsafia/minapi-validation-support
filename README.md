@@ -45,6 +45,27 @@ public class Todo
 }
 ```
 
+### Integration with IProblemDetailsService
+
+If `IProblemDetailsService` is registered in the service container, validation errors will be automatically returned as a **ProblemDetails** response. This behavior is consistent with all the other parts of ASP.NET Core and allows you to customize the response itself. To enable this integration, call the `AddProblemDetails` extension method.
+
+```csharp
+builder.Services.AddProblemDetails(options =>
+{
+    options.CustomizeProblemDetails = (context) =>
+    {
+        if (context.ProblemDetails is HttpValidationProblemDetails validationProblem)
+        {
+            context.ProblemDetails.Detail = 
+                $"Error(s) occurred: {validationProblem.Errors.Values.Sum(x => x.Length)}";
+        }
+
+        context.ProblemDetails.Extensions.TryAdd("timestamp", 
+            DateTime.UtcNow.ToString("o", CultureInfo.InvariantCulture));
+    };
+});
+```
+
 ## Implementation Details
 
 ### Default Validation Behavior of Validatable Type Info
