@@ -5,10 +5,20 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>GeneratedOutput</CompilerGeneratedFilesOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\models\Models.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
+  </ItemGroup>
+
+  <Target Name="RemoveDirectories" AfterTargets="Build">
+    <RemoveDir Directories="$(CompilerGeneratedFilesOutputPath)/Microsoft.AspNetCore.App.SourceGenerators" />
+    <RemoveDir Directories="$(CompilerGeneratedFilesOutputPath)/System.Text.Json.SourceGeneration" />
+  </Target>
 
 </Project>
