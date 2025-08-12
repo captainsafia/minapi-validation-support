@@ -277,7 +277,7 @@ namespace Microsoft.Extensions.Validation.Generated
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Extensions.Validation.ValidationsGenerator, Version=10.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60", "10.0.0.0")]
     file static class GeneratedServiceCollectionExtensions
     {
-        [global::System.Runtime.CompilerServices.InterceptsLocationAttribute(1, "RlT8Fo+C26c5SdZJ0QLiG48CAABQcm9ncmFtLmNz")]
+        [global::System.Runtime.CompilerServices.InterceptsLocationAttribute(1, "FMag18CHo1qtcjgy7mTc3JsCAABQcm9ncmFtLmNz")]
         public static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddValidation(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services, global::System.Action<global::Microsoft.Extensions.Validation.ValidationOptions>? configureOptions = null)
         {
             // Use non-extension method to avoid infinite recursion.

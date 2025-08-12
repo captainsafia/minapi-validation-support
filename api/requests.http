@@ -208,3 +208,216 @@ Content-Type: application/json
   "phoneNumber": "not-a-phone",
   "email": "contact@downtowntech.com"
 }
+
+### ===========================================
+### Custom Validation Resolver Tests
+### ===========================================
+
+### Valid BusinessProduct - should pass custom validation
+POST http://localhost:5040/business/products
+Content-Type: application/json
+
+{
+  "sku": "ELC1234",
+  "wholesalePrice": 50.00,
+  "retailPrice": 99.99,
+  "category": "Electronics"
+}
+
+### Invalid BusinessProduct - invalid SKU format
+POST http://localhost:5040/business/products
+Content-Type: application/json
+
+{
+  "sku": "invalid-sku",
+  "wholesalePrice": 50.00,
+  "retailPrice": 99.99,
+  "category": "Electronics"
+}
+
+### Invalid BusinessProduct - invalid category
+POST http://localhost:5040/business/products
+Content-Type: application/json
+
+{
+  "sku": "ELC1234",
+  "wholesalePrice": 50.00,
+  "retailPrice": 99.99,
+  "category": "InvalidCategory"
+}
+
+### Invalid BusinessProduct - retail price not higher than wholesale
+POST http://localhost:5040/business/products
+Content-Type: application/json
+
+{
+  "sku": "ELC1234",
+  "wholesalePrice": 100.00,
+  "retailPrice": 99.99,
+  "category": "Electronics"
+}
+
+### Invalid BusinessProduct - excessive markup (over 500%)
+POST http://localhost:5040/business/products
+Content-Type: application/json
+
+{
+  "sku": "ELC1234",
+  "wholesalePrice": 10.00,
+  "retailPrice": 100.00,
+  "category": "Electronics"
+}
+
+### Valid BusinessStore - should pass custom validation
+POST http://localhost:5040/business/stores
+Content-Type: application/json
+
+{
+  "businessLicenseNumber": "BL-12345678",
+  "taxId": "12-3456789",
+  "licenseExpiry": "2025-12-31"
+}
+
+### Invalid BusinessStore - invalid license format
+POST http://localhost:5040/business/stores
+Content-Type: application/json
+
+{
+  "businessLicenseNumber": "invalid-license",
+  "taxId": "12-3456789",
+  "licenseExpiry": "2025-12-31"
+}
+
+### Invalid BusinessStore - expired license
+POST http://localhost:5040/business/stores
+Content-Type: application/json
+
+{
+  "businessLicenseNumber": "BL-12345678",
+  "taxId": "12-3456789",
+  "licenseExpiry": "2020-01-01"
+}
+
+### Invalid BusinessStore - license expiring soon (within 30 days)
+POST http://localhost:5040/business/stores
+Content-Type: application/json
+
+{
+  "businessLicenseNumber": "BL-12345678",
+  "taxId": "12-3456789",
+  "licenseExpiry": "2024-09-01"
+}
+
+### Valid bulk order - should pass parameter validation
+POST http://localhost:5040/business/bulk-order
+Content-Type: application/json
+
+{
+  "productSku": "ELC1234",
+  "bulkQuantity": 100
+}
+
+### Invalid bulk order - quantity too low (less than 10)
+POST http://localhost:5040/business/bulk-order
+Content-Type: application/json
+
+{
+  "productSku": "ELC1234",
+  "bulkQuantity": 5
+}
+
+### Invalid bulk order - quantity too high (over 10,000)
+POST http://localhost:5040/business/bulk-order
+Content-Type: application/json
+
+{
+  "productSku": "ELC1234",
+  "bulkQuantity": 15000
+}
+
+### Valid discount application - should pass parameter validation
+POST http://localhost:5040/business/apply-discount
+Content-Type: application/json
+
+{
+  "productSku": "ELC1234",
+  "discountPercent": 15.5
+}
+
+### Invalid discount application - negative discount
+POST http://localhost:5040/business/apply-discount
+Content-Type: application/json
+
+{
+  "productSku": "ELC1234",
+  "discountPercent": -5.0
+}
+
+### Invalid discount application - discount over 100%
+POST http://localhost:5040/business/apply-discount
+Content-Type: application/json
+
+{
+  "productSku": "ELC1234",
+  "discountPercent": 150.0
+}
+
+### ===========================================
+### Custom ValidateAsync Method Tests
+### ===========================================
+
+### Test 1: Valid weekday discount (under 30% on weekday)
+POST http://localhost:5040/business/apply-discount
+Content-Type: application/json
+
+{
+  "productSku": "ELC1234",
+  "discountPercent": 20.0
+}
+
+### Test 2: Weekend discount over 25% (should fail custom validation)
+### Note: This test result depends on when you run it (weekends vs weekdays)
+POST http://localhost:5040/business/apply-discount
+Content-Type: application/json
+
+{
+  "productSku": "ELC1234",
+  "discountPercent": 30.0
+}
+
+### Test 3: High discount requiring manager approval (51-75% range)
+POST http://localhost:5040/business/apply-discount
+Content-Type: application/json
+
+{
+  "productSku": "ELC1234",
+  "discountPercent": 60.0
+}
+
+### Test 4: Extremely high discount (over 75% - should fail manager approval)
+POST http://localhost:5040/business/apply-discount
+Content-Type: application/json
+
+{
+  "productSku": "ELC1234",
+  "discountPercent": 80.0
+}
+
+### Test 5: Discount exceeding daily maximum (result varies by day of week)
+POST http://localhost:5040/business/apply-discount
+Content-Type: application/json
+
+{
+  "productSku": "ELC1234",
+  "discountPercent": 50.0
+}
+
+### Test 6: Non-promotional period high discount (over 15% when not first week of month)
+### Note: This test result depends on the current date
+POST http://localhost:5040/business/apply-discount
+Content-Type: application/json
+
+{
+  "productSku": "ELC1234",
+  "discountPercent": 18.0
+}

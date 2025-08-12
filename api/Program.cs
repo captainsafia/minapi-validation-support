@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Validation;
 using Models;
+using Api;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,7 +19,11 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
 });
 
-builder.Services.AddValidation();
+builder.Services.AddValidation(options =>
+{
+    // Register our custom validation resolver
+    options.Resolvers.Add(new BusinessRuleValidationResolver());
+});
 
 // With this, validation errors will be returned as a ProblemDetails response.
 builder.Services.AddProblemDetails(options =>
@@ -68,6 +73,28 @@ app.MapPost("/product", ([Required] Product product) =>
 app.MapPost("/stores", ([Required] Store store) =>
 {
     return TypedResults.Created($"/stores/{store.Id}", store);
+});
+
+// New endpoints that demonstrate custom validation resolver functionality
+
+app.MapPost("/business/products", (BusinessProduct product) =>
+{
+    return TypedResults.Created($"/business/products/{product.Sku}", product);
+});
+
+app.MapPost("/business/stores", (BusinessStore store) =>
+{
+    return TypedResults.Created($"/business/stores/{store.BusinessLicenseNumber}", store);
+});
+
+app.MapPost("/business/bulk-order", ([Required] string productSku, int bulkQuantity) =>
+{
+    return TypedResults.Ok(new { ProductSku = productSku, Quantity = bulkQuantity, Status = "Bulk order processed" });
+});
+
+app.MapPost("/business/apply-discount", ([Required] string productSku, decimal discountPercent) =>
+{
+    return TypedResults.Ok(new { ProductSku = productSku, DiscountApplied = discountPercent, Status = "Discount applied" });
 });
 
 app.Run();
@@ -148,6 +175,8 @@ public class EvenNumberAttribute : ValidationAttribute
 [JsonSerializable(typeof(Address))]
 [JsonSerializable(typeof(Store))]
 [JsonSerializable(typeof(Product))]
+[JsonSerializable(typeof(BusinessProduct))]
+[JsonSerializable(typeof(BusinessStore))]
 [JsonSerializable(typeof(HttpValidationProblemDetails))]
 internal partial class AppJsonSerializerContext : JsonSerializerContext
 {
